@@ -55,10 +55,11 @@ function haciaFase2 () {
     switch (cantidadClics) {
         case 1:
             boton.setAttribute("title", "Ya dejame");
-            boton.style.height = "50px";
-            boton.style.width = "50px";
+            boton.style.height = "20px";
+            boton.style.width = "20px";
             boton.style.top = "0px";
             boton.style.right = "600px";
+            boton.style.background = "#a8b5af";
             alert("¿Por qué me tocas el chilito?");
             break;
         
@@ -68,7 +69,7 @@ function haciaFase2 () {
             boton.style.width = "10px";
             boton.style.top = "600px";
             boton.style.right = "100px";
-            boton.style.background = "#a8e5af";
+            boton.style.background = "#a8a5af";
             alert("?");
             break;
 
@@ -78,7 +79,7 @@ function haciaFase2 () {
             boton.style.width = "5px";        
             boton.style.top = "100px";
             boton.style.right = "100px";
-            boton.style.background = "#a8a5af";
+            boton.style.background = "#d8a5af";
             break;
 
         case 4:
@@ -86,7 +87,7 @@ function haciaFase2 () {
             alert("Tu me tiene harto muchacho el diablo... mira el medio");
             document.getElementById('emoji-principal').style.display = "none";
             document.getElementById('titulo-principal').style.display = "none";
-            document.getElementById('parrafo-principal').style.display = "none";
+            document.getElementById('parrafo-principal').innerHTML = "Ahora si, preparate y...";
             document.getElementById('insulto').classList.remove("ocultar");
             document.getElementById('miBotonPase2').classList.remove("ocultar");
             setTimeout(() => {
