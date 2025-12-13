@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página con Pantalla de Carga Falsa</title>
+    <style>
+        body {
+            background-color: rgb(3, 3, 3);
+        }
+        .gif {
+            margin-top: 10vh;
+            display: flex;
+            justify-content: center;   
+
+        }
+
+        .ternor-gif-embed img {
+            width: 450px !important;
+            height: 450px !important;
+        }
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #333333; 
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; 
+            transition: opacity 0.5s ease-out; 
+        }
+
+        .spinner {
+            border: 8px solid #ddd;
+            border-top: 8px solid #3498db; 
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1.5s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2em;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        #main-content {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            display: none; 
+        }
+        
+        .card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div id="loading-spinner" class="spinner" style="display: none;"></div>
+        <p id="loading-text" class="loading-text" style="display: none;">Perate muchacho el diavlo...</p>
+        <button id="start-button">tocame</button>
+    </div>
+
+    <div id="main-content">
+        <div class="gif" id="zeldagif" data-postid="16506988249236832657"  >
+            <img src="resources/the-legend-of-zelda-legend-of-zelda.gif" alt="man" style="width:450x; height:450px;">
+        </div> 
+    </div>
+    <audio id="myAudio" src="resources/zelda.mp3"></audio>
+    <script>
+        window.addEventListener('load', function() {
+
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainContent = document.getElementById('main-content');
+            const startButton = document.getElementById('start-button');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const loadingText = document.getElementById('loading-text');
+            
+            const delayTime = 3000; 
+
+            startButton.addEventListener('click', () => { 
+                startButton.style.display = 'none';
+                loadingSpinner.style.display = 'block';
+                loadingText.style.display = 'block';
+
+                setTimeout(() => {
+                    loadingScreen.style.opacity = '0'; 
+
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        mainContent.style.display = 'block'; 
+
+                        const playPromise = document.getElementById("myAudio").play();
+                        if (playPromise !== undefined) {
+                            playPromise.then(() => {
+                                // Autoplay started!
+                            }).catch(error => {
+                                console.error("Playback failed:", error);
+
+                            });
+                        }
+                    }, 500); 
+                    
+                    
+                }, delayTime);
+
+                setTimeout(() => {
+                    alert("JAJA que cagado estaria eso, checa tu steam jiji");
+                    document.getElementById("myAudio").pause(); 
+                    document.getElementById("zeldagif").style.display = "none"; 
+                }, 9000); 
+            });
+            
+
+        });
+    </script>
+</body>
+</html>

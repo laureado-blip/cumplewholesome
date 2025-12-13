@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Maldito</title>
+    <style>
+        body {
+            background-color: #222;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Evita barras de desplazamiento si el cuadro se sale un poco */
+        }
+
+        h1 { margin-bottom: 10px; font-size: 24px; }
+        
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 10; /* Asegurar que el juego esté detrás de la amenaza */
+        }
+
+        canvas {
+            background-color: black;
+            border: 4px solid white;
+            display: block;
+            cursor: none; /* Oculta el cursor sobre el canvas para mejor inmersión */
+        }
+
+        /* --- NUEVO: ESTILOS DEL CUADRO MORADO --- */
+        #purpleBlocker {
+            position: fixed; /* Se mueve relativo a la ventana */
+            top: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            background-color: rgba(128, 0, 128, 0.9); /* Morado semitransparente */
+            border: 3px solid #ff00ff;
+            box-shadow: 0 0 15px #ff00ff;
+            display: none; /* Oculto inicialmente */
+            z-index: 9999; /* Muy por encima de todo */
+            /* IMPORTANTE: Esto permite que el mouse "atraviese" el cuadro 
+               para que no pierdas el control de la paleta */
+            pointer-events: none; 
+            will-change: transform;
+        }
+
+        /* Capa de mensajes (Ganaste/Perdiste) */
+        #overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.85);
+            text-align: center;
+            z-index: 20;
+        }
+
+        .message { font-size: 40px; margin-bottom: 20px; font-weight: bold; }
+
+        button {
+            padding: 15px 30px; font-size: 18px; border: none; cursor: pointer;
+            border-radius: 5px; font-weight: bold; transition: transform 0.2s;
+        }
+        button:hover { transform: scale(1.05); }
+        .btn-win { background-color: #2ecc71; color: white; }
+        .btn-retry { background-color: #e74c3c; color: white; }
+
+    </style>
+</head>
+<body>
+
+    <div id="purpleBlocker"></div>
+
+    <h1>Solo 3 puntico</h1>
+    
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="overlay">
+            <div id="resultMessage" class="message"></div>
+            <div id="actionContainer"></div>
+        </div>
+    </div>
+
+    <audio id="myAudio" src="resources/gemidos.ogg"></audio>
+    <script>
+        // --- CONFIGURACIÓN ---
+        const LINK_DESTINO = "zelda.html"; // CAMBIA ESTO
+        const PUNTOS_PARA_GANAR = 3;
+
+        // --- VARIABLES DEL PONG ---
+        var canvas, canvasContext;
+        var ballX = 50, ballY = 50;
+        var ballSpeedX = 10, ballSpeedY = 4;
+        var player1Score = 0, player2Score = 0;
+        var paddle1Y = 250, paddle2Y = 250;
+        const PADDLE_HEIGHT = 100, PADDLE_THICKNESS = 10;
+        var isGameOver = false;
+        var yaSeMostro = false;
+
+        // --- VARIABLES DE LA AMENAZA MORADA ---
+        var blockerActive = false;
+        var blockerElem;
+        var bX = 0, bY = 0;   // Posición del blocker
+        var bdX = 7, bdY = 7; // Velocidad del blocker (más rápido que la pelota)
+
+        window.onload = function() {
+            canvas = document.getElementById('gameCanvas');
+            canvasContext = canvas.getContext('2d');
+            blockerElem = document.getElementById('purpleBlocker');
+
+            var framesPerSecond = 60;
+            setInterval(function() {
+                moveEverything();
+                drawEverything();
+            }, 1000/framesPerSecond);
+
+            canvas.addEventListener('mousemove', function(evt) {
+                var mousePos = calculateMousePos(evt);
+                paddle1Y = mousePos.y - (PADDLE_HEIGHT/2);
+            });
+        }
+
+        function calculateMousePos(evt) {
+            var rect = canvas.getBoundingClientRect();
+            var root = document.documentElement;
+            var mouseX = evt.clientX - rect.left - root.scrollLeft;
+            var mouseY = evt.clientY - rect.top - root.scrollTop;
+            return { x: mouseX, y: mouseY };
+        }
+
+        function ballReset() {
+            if(player1Score >= PUNTOS_PARA_GANAR || player2Score >= PUNTOS_PARA_GANAR) {
+                isGameOver = true;
+                showEndScreen();
+            }
+            ballSpeedX = -ballSpeedX;
+            ballX = canvas.width/2;
+            ballY = canvas.height/2;
+        }
+
+        function computerMovement() {
+            var paddle2YCenter = paddle2Y + (PADDLE_HEIGHT/2);
+            if(paddle2YCenter < ballY - 35) paddle2Y += 6;
+            else if(paddle2YCenter > ballY + 35) paddle2Y -= 6;
+        }
+
+        function moveEverything() {
+            if(isGameOver) return;
+            computerMovement();
+
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Colisión izquierda
+            if(ballX < 0) {
+                if(ballY > paddle1Y && ballY < paddle1Y+PADDLE_HEIGHT) {
+                    ballSpeedX = -ballSpeedX;
+                    var deltaY = ballY - (paddle1Y+PADDLE_HEIGHT/2);
+                    ballSpeedY = deltaY * 0.35;
+                } else {
+                    player2Score++; // PC anota
+                    ballReset();
+                }
+            }
+            
+            // Colisión derecha
+            if(ballX > canvas.width) {
+                if(ballY > paddle2Y && ballY < paddle2Y+PADDLE_HEIGHT) {
+                    ballSpeedX = -ballSpeedX;
+                    var deltaY = ballY - (paddle2Y+PADDLE_HEIGHT/2);
+                    ballSpeedY = deltaY * 0.35;
+                } else {
+                    player1Score++; // JUGADOR ANOTA
+                    
+                    // --- DETECTAR PRIMER PUNTO Y ACTIVAR LA TRAMPA ---
+                    if (!blockerActive && player1Score === 1) {
+                        activarAmenazaMorada();
+                    }
+
+                    ballReset();
+                }
+            }
+            if(ballY < 0 || ballY > canvas.height) ballSpeedY = -ballSpeedY;
+        }
+
+        function drawEverything() {
+            colorRect(0,0,canvas.width,canvas.height,'black');
+            drawNet();
+            colorRect(0,paddle1Y,PADDLE_THICKNESS,PADDLE_HEIGHT,'white');
+            colorRect(canvas.width-PADDLE_THICKNESS,paddle2Y,PADDLE_THICKNESS,PADDLE_HEIGHT,'white');
+            colorCircle(ballX, ballY, 10, 'white');
+            canvasContext.font = "30px Arial";
+            canvasContext.fillText(player1Score, 100, 100);
+            canvasContext.fillText(player2Score, canvas.width-100, 100);
+        }
+
+        function drawNet() {
+            for(var i=0; i<canvas.height; i+=40) colorRect(canvas.width/2-1,i,2,20,'white');
+        }
+        function colorCircle(centerX, centerY, radius, drawColor) {
+            canvasContext.fillStyle = drawColor;
+            canvasContext.beginPath();
+            canvasContext.arc(centerX, centerY, radius, 0,Math.PI*2,true);
+            canvasContext.fill();
+        }
+        function colorRect(leftX,topY, width,height, drawColor) {
+            canvasContext.fillStyle = drawColor;
+            canvasContext.fillRect(leftX,topY, width,height);
+        }
+
+        // --- LÓGICA DEL CUADRO MORADO ---
+        function activarAmenazaMorada() {
+            blockerActive = true;
+            // 1. Mostrar el Alert
+            if (!yaSeMostro) {
+                alert("Muahaha por toquetearme voy a bloquear tu victoria");
+                yaSeMostro = true;
+            }
+            
+            // 2. Mostrar el cuadro
+            blockerElem.style.display = 'block';
+            // Posición inicial aleatoria para que no tape siempre lo mismo al inicio
+            bX = Math.random() * (window.innerWidth - 150);
+            bY = Math.random() * (window.innerHeight - 150);
+
+            // 3. Iniciar el bucle de movimiento del cuadro
+            requestAnimationFrame(moverCuadroMorado);
+        }
+
+        function moverCuadroMorado() {
+            if (isGameOver) return; // Detener si el juego acaba
+
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
+            const rect = blockerElem.getBoundingClientRect();
+
+            // Lógica de rebote en los bordes de la VENTANA
+            if (bX + rect.width >= winW || bX <= 0) bdX = -bdX;
+            if (bY + rect.height >= winH || bY <= 0) bdY = -bdY;
+
+            bX += bdX;
+            bY += bdY;
+
+            // Usamos transform para mejor rendimiento
+            blockerElem.style.transform = `translate(${bX}px, ${bY}px)`;
+            
+            // Siguiente frame
+            requestAnimationFrame(moverCuadroMorado);
+        }
+
+        // --- FIN DEL JUEGO ---
+        function showEndScreen() {
+            document.getElementById('overlay').style.display = 'flex';
+            // Ocultar el blocker al final para que no moleste al hacer click en los botones
+            if(blockerElem) blockerElem.style.display = 'none';
+
+            const msgDiv = document.getElementById('resultMessage');
+            const actionDiv = document.getElementById('actionContainer');
+
+            if(player1Score >= PUNTOS_PARA_GANAR) {
+                msgDiv.innerText = "Felicidade coñazo";
+                msgDiv.style.color = "#2ecc71";
+                actionDiv.innerHTML = `<button class="btn-win" onclick="window.location.href='${LINK_DESTINO}'">Solo debes completar un juego entero y listo</button>`;
+            } else {
+                document.getElementById("myAudio").play(); 
+                msgDiv.innerText = "Que bueno pendejo";
+                msgDiv.style.color = "#e74c3c";
+                actionDiv.innerHTML = `<button class="btn-retry" onclick="location.reload()">Reintentar</button>`;
+            }
+        }
+    </script>
+</body>
+</html>
