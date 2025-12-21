@@ -1,5 +1,4 @@
 function darSorpresa() {
-    // 1. Obtener los elementos que vamos a manipular
     const boton = document.getElementById('miBoton');
     const botonParte2 = document.getElementById('secret-button');
     const emoji = document.getElementById('emoji-principal');
@@ -7,45 +6,40 @@ function darSorpresa() {
     const parrafo = document.getElementById('parrafo-principal');
     const body = document.body;
 
-    // 2. Fase 1: Anticipación (Ocultar botón y cambiar texto)
-    boton.style.display = "none"; // Desaparece el botón
-    parrafo.innerText = "[CODIGO PARA STEAM 1]";
-    emoji.innerText = "🎁"; // Cambia el plátano por un regalo
+    boton.style.display = "none"; 
+    parrafo.innerText = "LGI6H-TID8J-WPK3H";
+    emoji.innerText = "🎁"; 
 
-    // Pequeña pausa de 1 segundo antes del caos
     setTimeout(() => {
         titulo.innerText = "¡EL HUESASO!";
         parrafo.innerText = "¡NO VA A LLEVA' EL DIABLAZO!";
         
-        // 3. Fase 2: El Caos (Temblor y luces de fiesta)
-        emoji.classList.add('temblor-intenso'); // Activar animación de temblor CSS
+        emoji.classList.add('temblor-intenso');
 
         let contadorColores = 0;
         const coloresFiesta = ['#ff5f6d', '#ffc371', '#43cea2', '#185a9d', '#8e44ad'];
         
-        // Iniciar el parpadeo del fondo cada 150ms
+
         const intervaloFiesta = setInterval(() => {
             body.style.backgroundColor = coloresFiesta[contadorColores % coloresFiesta.length];
             contadorColores++;
         }, 150);
 
-        // 4. Fase 3: La Gran Revelación (después de 3 segundos de caos)
+
         setTimeout(() => {
-            clearInterval(intervaloFiesta); // Detener las luces
-            emoji.classList.remove('temblor-intenso'); // Detener el temblor
+            clearInterval(intervaloFiesta); 
+            emoji.classList.remove('temblor-intenso'); 
             
-            // Color de fondo final de celebración (verde menta suave)
             body.style.backgroundColor = "#a8e6cf"; 
 
-            // --- AQUÍ PONES EL MENSAJE REAL DEL REGALO ---
             emoji.innerHTML = "<img src='resources/klaus.png'>";
             titulo.innerText = "¡TOMA TU REGALO!";
             parrafo.innerHTML = "";
             botonParte2.classList.remove("ocultar");
             
-        }, 3000); // 3000ms = 3 segundos de espera
+        }, 3000); 
 
-    }, 1000); // Espera inicial de 1 segundo
+    }, 1000); 
 }
 
 let cantidadClics = 0;

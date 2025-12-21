@@ -84,6 +84,12 @@
         <div class="gif" id="zeldagif" data-postid="16506988249236832657"  >
             <img src="resources/the-legend-of-zelda-legend-of-zelda.gif" alt="man" style="width:450x; height:450px;">
         </div> 
+        <div class="gif" id="happydog" data-postid="16506988249236832657"  style="display:none;">
+            <img src="resources/perro-feliz.gif" alt="man" style="width:450x; height:450px;">
+            <img src="resources/regalos.gif" alt="man" style="width:450x; height:450px;">
+            <img src="resources/cuter_cat_story.gif" alt="man" style="width:450x; height:450px;">
+            <p style="color:black; position: fixed; right:20px; bottom: 20px;">M9X70-IVR34-A2BQB</p>
+        </div> 
     </div>
     <audio id="myAudio" src="resources/zelda.mp3"></audio>
     <script>
@@ -112,7 +118,7 @@
                         const playPromise = document.getElementById("myAudio").play();
                         if (playPromise !== undefined) {
                             playPromise.then(() => {
-                                // Autoplay started!
+
                             }).catch(error => {
                                 console.error("Playback failed:", error);
 
@@ -126,7 +132,8 @@
                 setTimeout(() => {
                     alert("JAJA que cagado estaria eso, checa tu steam jiji");
                     document.getElementById("myAudio").pause(); 
-                    document.getElementById("zeldagif").style.display = "none"; 
+                    document.getElementById("zeldagif").style.display = "none";
+                    document.getElementById("happydog").style.display = "block"; 
                 }, 9000); 
             });
             
